@@ -52,19 +52,16 @@ td {
       font-weight: 600;
     }
 
-    /* ช่องเวลาว่าง */
     .slot {
       background: #f3faf5;
     }
 
-    /* ช่องที่ถูกจอง */
     .slot.booked {
       background: #2e7d32;
       color: white;
       font-weight: 600;
     }
 
-    /* คอลัมชื่อสนาม */
     #scheduleTable td:first-child {
       background: #f1f1f1;
       font-weight: 600;
@@ -130,7 +127,6 @@ td {
 
     #bookingListTable th {
       background: #1976d2;
-      /* น้ำเงิน */
       color: white;
       font-weight: 600;
     }
@@ -139,7 +135,6 @@ td {
       background: white;
     }
 
-    /* สลับสีแถว อ่านง่าย */
     #bookingListTable tr:nth-child(even) td {
       background: #f5f9ff;
     }
@@ -160,7 +155,6 @@ td {
       display: flex;
       align-items: center;
       gap: 12px;
-      /* 🔥 เว้นระยะระหว่างปุ่มกับข้อความ */
       margin-bottom: 20px;
     }
 
@@ -168,7 +162,6 @@ td {
       font-weight: 600;
     }
 
-    /* 🔥 Switch */
     .switch {
       position: relative;
       display: inline-block;
@@ -240,25 +233,21 @@ td {
       letter-spacing: 0.5px;
     }
 
-    /* คอลัมชื่อสนาม */
     #scheduleTable td:first-child {
       background: #f4f6f9;
       font-weight: 600;
     }
 
-    /* ช่องเวลาปกติ */
     .slot {
       background: #f3faf5;
       transition: all 0.2s ease;
     }
 
-    /* Hover effect */
     .slot:hover {
       background: #dff5e6;
       cursor: pointer;
     }
 
-    /* ช่องที่ถูกจอง */
     .slot.booked {
       background: #2e7d32;
       color: white;
@@ -268,7 +257,6 @@ td {
     }
 
 
-    /* ===== ตารางรายชื่อลูกค้า ===== */
     #bookingListTable th {
       background: linear-gradient(135deg, #1976d2, #125aa3);
       color: white;
@@ -410,7 +398,6 @@ transition: transform 0.2s ease;
 
     <div style="display:flex; gap:40px; margin-bottom:10px;">
 
-      <!-- ฝั่งเวลาเริ่ม -->
       <div style="flex:1;">
         <input type="time" id="start_time" min="15:00" max="23:00"
            style="margin-bottom:2px;">
@@ -418,7 +405,6 @@ transition: transform 0.2s ease;
         </div>
       </div>
 
-      <!-- ฝั่งเวลาสิ้นสุด -->
       <div style="flex:1;">
         <input type="time" id="end_time" readonly
            style="margin-bottom:2px;">
@@ -536,12 +522,12 @@ function calculateEndTime(){
       return;
   }
 
-  // แสดง AM/PM (input จะโชว์เอง)
+
   document.getElementById("end_time").value =
     end.getHours().toString().padStart(2,'0')+":"+
     end.getMinutes().toString().padStart(2,'0');
 
-  // แสดง 24 ชม ใต้ช่อง
+
   document.getElementById("start_24").innerText =
   "เวลา "+h.toString().padStart(2,'0')+":"+
   m.toString().padStart(2,'0');
@@ -688,7 +674,7 @@ document.getElementById("booking_date")
   function toMin(t) {
   if (!t) return -1;
 
-  const clean = t.toString().trim();  // 🔥 ตัดช่องว่าง
+  const clean = t.toString().trim();
   const p = clean.split(":");
 
   return parseInt(p[0]) * 60 + parseInt(p[1]);
@@ -772,13 +758,11 @@ function showMessage(text, isSuccess){
     box.classList.add("error-msg");
   }
 
-  // ✅ เลื่อนขึ้นไปหาแจ้งเตือน
   box.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
 
-  // ซ่อนอัตโนมัติ
   setTimeout(()=>{
     box.style.display = "none";
   },4000);
@@ -808,15 +792,13 @@ function updatePrice(){
   priceBox.innerText =
     "ราคา " + total + " บาท (" + pricePerHour + " บาท/ชั่วโมง)";
 
-  // 🔥 เปลี่ยนสีถ้าใช้คูปอง
   priceBox.classList.remove("price-coupon");
   if(hasCoupon){
     priceBox.classList.add("price-coupon");
   }
 
-  // 🔥 เด้ง animation
   priceBox.classList.remove("price-animate");
-  void priceBox.offsetWidth;   // รีเซ็ต animation
+  void priceBox.offsetWidth;
   priceBox.classList.add("price-animate");
 }
 const scheduleDate = document.getElementById("schedule_date");
@@ -829,7 +811,7 @@ function syncDate(source){
   scheduleDate.value = value;
   bookingDate.value  = value;
 
-  loadSchedule();   // โหลดตาราง + รายชื่อลูกค้าใหม่
+  loadSchedule();
 }
 
 scheduleDate.addEventListener("change", function(){
@@ -842,7 +824,6 @@ bookingDate.addEventListener("change", function(){
 
 function focusBooking(court, start, end, name){
 
-  // ลบ highlight เก่า
   document.querySelectorAll(".slot")
     .forEach(c => c.classList.remove("selected-booking"));
 
@@ -885,17 +866,14 @@ if(highlightedCells.length > 0){
 
   const container = document.querySelector(".schedule");
 
-  // หา cell กลางของช่วงที่จอง
   const middleIndex = Math.floor(highlightedCells.length / 2);
   const middleCell = highlightedCells[middleIndex];
 
-  // ===== เลื่อนแนวตั้ง =====
   middleCell.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
 
-  // ===== เลื่อนแนวนอนแบบคำนวณกลางจริง =====
   const cellCenter = middleCell.offsetLeft + (middleCell.offsetWidth / 2);
   const containerCenter = container.clientWidth / 2;
 
@@ -906,7 +884,6 @@ if(highlightedCells.length > 0){
   highlightedCells.forEach(cell => {
     cell.classList.add("flash");
 
-    // ลบ class หลัง animation จบ
     setTimeout(() => {
       cell.classList.remove("flash");
     }, 600);
