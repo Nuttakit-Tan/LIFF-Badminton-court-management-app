@@ -3,6 +3,7 @@
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     body {
@@ -442,6 +443,7 @@ transition: transform 0.2s ease;
     const startHour = 15;
 const endHour = 23;
 const interval = 30;
+const API_URL = "https://script.google.com/macros/s/AKfycbxy5MNPP0JckxD1dmqAFKPFvPavOa758HCKrCGNHr9PyKRUx4j5qx1zSrBVAayJWIhF/exec";
 
 function setActiveRow(row){
   document.querySelectorAll("#bookingListTable tr")
@@ -489,7 +491,7 @@ window.onload = function(){
   document.getElementById("booking_date").value = today;
   document.getElementById("schedule_date").value = today;
 
-  fetch("https://script.google.com/macros/s/AKfycby2-LfbgLkj-b5CL4GLkHRV7fZAt_PPfAR_2pr9cMjpPhGrKWk08xlZKE1Z9hsWnNlQ/exec?action=getCourts")
+  fetch(API_URL + "?action=getCourts")
   .then(res => res.json())
   .then(courts => {
     generateTable(courts);
@@ -569,7 +571,7 @@ function loadSchedule(){
   const date = document.getElementById("schedule_date").value;
   if(!date) return alert("เลือกวันที่ก่อน");
 
-fetch("https://script.google.com/macros/s/AKfycby2-LfbgLkj-b5CL4GLkHRV7fZAt_PPfAR_2pr9cMjpPhGrKWk08xlZKE1Z9hsWnNlQ/exec?action=getBookingsByDate&date=" + date)
+fetch(API_URL + "?action=getBookingsByDate&date=" + date)
   .then(res => res.json())
   .then(function(bookings){
 
@@ -647,7 +649,7 @@ function submitForm(){
   has_coupon: document.getElementById("couponToggle").checked
 };
 
-fetch("https://script.google.com/macros/s/AKfycby2-LfbgLkj-b5CL4GLkHRV7fZAt_PPfAR_2pr9cMjpPhGrKWk08xlZKE1Z9hsWnNlQ/exec", {
+fetch(API_URL, {
   method: "POST",
   body: JSON.stringify({
     action: "saveBooking",
@@ -684,7 +686,7 @@ function loadBookingList(){
   const date = document.getElementById("schedule_date").value;
   if(!date) return;
 
-  fetch("https://script.google.com/macros/s/AKfycby2-LfbgLkj-b5CL4GLkHRV7fZAt_PPfAR_2pr9cMjpPhGrKWk08xlZKE1Z9hsWnNlQ/exec?action=getBookingListByDate&date=" + date)
+  fetch(API_URL +"?action=getBookingListByDate&date=" + date)
   .then(res => res.json())
   .then(function(list){
 
@@ -913,7 +915,7 @@ function confirmCancel(){
 
   if(!cancelTargetId) return;
 
-  fetch("https://script.google.com/macros/s/AKfycby2-LfbgLkj-b5CL4GLkHRV7fZAt_PPfAR_2pr9cMjpPhGrKWk08xlZKE1Z9hsWnNlQ/exec", {
+  fetch(API_URL, {
   method: "POST",
   body: JSON.stringify({
     action: "cancelBooking",
@@ -938,6 +940,61 @@ function goToBookingForm(){
   document.querySelector(".card").scrollIntoView({
     behavior: "smooth"
   });
+}
+
+let currentUser = null;
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  liff.init({ liffId: "2009412377-oQuauaRX" })
+    .then(() => {
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      return liff.getProfile();
+
+    })
+    .then(profile => {
+
+      if(!profile) return;
+
+      const name = profile.displayName;
+      const userId = profile.userId;
+
+      console.log("LINE Name:", name);
+      console.log("LINE UserID:", userId);
+
+      // ใส่ชื่ออัตโนมัติ
+      const nameInput = document.getElementById("full_name");
+      if(nameInput && nameInput.value === ""){
+        nameInput.value = name;
+      }
+
+    })
+    .catch(err => console.error(err));
+
+});
+
+function logUserAccess(user){
+
+function logUserAccess(user){
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "logAccess",
+      payload: user
+    })
+  })
+  .then(res => res.json())
+  .then(res => console.log("Access logged"))
+  .catch(err => console.error("Log error", err));
+
+}
+
 }
   </script>
 
