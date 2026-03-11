@@ -293,6 +293,7 @@ td {
       color: white !important;
       box-shadow: 0 0 10px rgba(255, 152, 0, 0.7);
       transform: scale(1.05);
+transition: transform 0.2s ease;
     }
 
     .cancel-btn {
@@ -316,6 +317,15 @@ td {
     #bookingListTable tr.active-row td {
   background: #ffe082 !important;
   font-weight: bold;
+}
+@keyframes flashHighlight {
+  0%   { box-shadow: 0 0 0 rgba(255,152,0,0); }
+  50%  { box-shadow: 0 0 18px rgba(255,152,0,0.9); }
+  100% { box-shadow: 0 0 0 rgba(255,152,0,0); }
+}
+
+.slot.flash {
+  animation: flashHighlight 0.6s ease;
 }
   </style>
 
@@ -886,6 +896,14 @@ if(highlightedCells.length > 0){
   container.scrollTo({
     left: cellCenter - containerCenter,
     behavior: "smooth"
+  });
+  highlightedCells.forEach(cell => {
+    cell.classList.add("flash");
+
+    // ลบ class หลัง animation จบ
+    setTimeout(() => {
+      cell.classList.remove("flash");
+    }, 600);
   });
 }
 }
