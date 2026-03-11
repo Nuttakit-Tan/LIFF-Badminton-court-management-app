@@ -26,10 +26,15 @@
   margin: 10px;
 }
 
-table {
+#scheduleTable {
   border-collapse: collapse;
-  width: 100%;
-  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+}
+
+#scheduleTable th,
+#scheduleTable td {
+  min-width: 70px;
 }
 
     th,
@@ -442,6 +447,12 @@ td {
 const endHour = 23;
 const interval = 30;
 
+function setActiveRow(row){
+  document.querySelectorAll("#bookingListTable tr")
+    .forEach(r => r.classList.remove("active-row"));
+  row.classList.add("active-row");
+}
+
 function generateTable(courts){
 
   const table = document.getElementById("scheduleTable");
@@ -674,12 +685,6 @@ document.getElementById("booking_date")
 }
 function loadBookingList(){
 
-  function setActiveRow(row){
-  document.querySelectorAll("#bookingListTable tr")
-    .forEach(r => r.classList.remove("active-row"));
-  row.classList.add("active-row");
-}
-
   const date = document.getElementById("schedule_date").value;
   if(!date) return;
 
@@ -858,14 +863,25 @@ while (current <= adjustedEnd) {
   current += 30;
 }
 
-  // เลื่อนหน้าจอขึ้นไปที่ตารางเวลา
-  const targetCell = row.querySelector(".selected-booking");
+const targetCell = row.querySelector(".selected-booking");
 
 if(targetCell){
+
+  // เลื่อนแนวตั้ง
   targetCell.scrollIntoView({
     behavior: "smooth",
-    block: "center",
-    inline: "center"
+    block: "center"
+  });
+
+  // เลื่อนแนวนอน
+  const container = document.querySelector(".schedule");
+
+  const cellLeft = targetCell.offsetLeft;
+  const containerWidth = container.clientWidth;
+
+  container.scrollTo({
+    left: cellLeft - containerWidth / 2,
+    behavior: "smooth"
   });
 }
 }
