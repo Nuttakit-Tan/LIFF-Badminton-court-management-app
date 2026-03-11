@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f4f6f9;
+}
+    .header {
+      background: #06C755;
+      color: white;
+      padding: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 0 0 20px 20px;
+    }
+
+    .schedule {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 10px;
+}
+
+#scheduleTable {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+}
+
+#scheduleTable th,
+#scheduleTable td {
+  min-width: 70px;
+}
+
+    th,
+td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+    #scheduleTable th {
+      background: #06C755;
+      color: white;
+      font-weight: 600;
+    }
+
+    .slot {
+      background: #f3faf5;
+    }
+
+    .slot.booked {
+      background: #2e7d32;
+      color: white;
+      font-weight: 600;
+    }
+
+    #scheduleTable td:first-child {
+      background: #f1f1f1;
+      font-weight: 600;
+    }
+
+    .slot {
+      background: #e9fbe9;
+    }
+
+    .slot.booked {
+      background: #4CAF50;
+      color: white;
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    .card {
+      background: white;
+      margin: 30px auto;
+      padding: 30px;
+      border-radius: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      max-width: 650px;
+    }
+
+    input,
+    select {
+      width: 99%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .btn-primary {
+      background: #06C755;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #ddd;
+    }
+
+    .price {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+      color: #ff6b00;
+    }
+
+    #bookingListTable th {
+      background: #1976d2;
+      color: white;
+      font-weight: 600;
+    }
+
+    #bookingListTable td {
+      background: white;
+    }
+
+    #bookingListTable tr:nth-child(even) td {
+      background: #f5f9ff;
+    }
+
+    .success-msg {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .error-msg {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .coupon-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .coupon-label {
+      font-weight: 600;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #ccc;
+      border-radius: 34px;
+      transition: .3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      top: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .3s;
+    }
+
+    input:checked+.slider {
+      background-color: #06C755;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(24px);
+    }
+
+    @keyframes pricePop {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.15);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .price-animate {
+      animation: pricePop 0.3s ease;
+    }
+
+    .price-coupon {
+      color: #06C755 !important;
+    }
+
+    #scheduleTable th {
+      background: linear-gradient(135deg, #06C755, #00a844);
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    #scheduleTable td:first-child {
+      background: #f4f6f9;
+      font-weight: 600;
+    }
+
+    .slot {
+      background: #f3faf5;
+      transition: all 0.2s ease;
+    }
+
+    .slot:hover {
+      background: #dff5e6;
+      cursor: pointer;
+    }
+
+    .slot.booked {
+      background: #2e7d32;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+
+
+    #bookingListTable th {
+      background: linear-gradient(135deg, #1976d2, #125aa3);
+      color: white;
+      font-weight: 600;
+    }
+
+    #bookingListTable td {
+      background: white;
+      transition: background 0.2s ease;
+    }
+
+    #bookingListTable tr:nth-child(even) td {
+      background: #f5f9ff;
+    }
+
+    #bookingListTable tr:hover td {
+      background: #e3f2fd;
+    }
+
+    .slot.selected-booking {
+      background: #ff9800 !important;
+      color: white !important;
+      box-shadow: 0 0 10px rgba(255, 152, 0, 0.7);
+      transform: scale(1.05);
+transition: transform 0.2s ease;
+    }
+
+    .cancel-btn {
+      background: #e53935;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .cancel-btn:hover {
+      background: #c62828;
+    }
+
+    .header {
+  border-radius: 0;
+    }
+
+    #bookingListTable tr.active-row td {
+  background: #ffe082 !important;
+  font-weight: bold;
+}
+@keyframes flashHighlight {
+  0%   { box-shadow: 0 0 0 rgba(255,152,0,0); }
+  50%  { box-shadow: 0 0 18px rgba(255,152,0,0.9); }
+  100% { box-shadow: 0 0 0 rgba(255,152,0,0); }
+}
+
+.slot.flash {
+  animation: flashHighlight 0.6s ease;
+}
+  </style>
+
+</head>
+
+<body>
+
+  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00)</div>
+  <div style="margin:15px; display:flex; gap:10px; align-items:center;">
+  <input type="date" id="schedule_date" style="padding:10px; border-radius:8px;">
+
+  <button onclick="loadSchedule()"
+    style="padding:20px 16px; border:none; border-radius:8px; background:#06C755; color:white;">
+    โหลดข้อมูล
+  </button>
+
+  <button onclick="goToBookingForm()"
+    style="padding:20px 16px; border:none; border-radius:8px; background:#1976d2; color:white;">
+    จองสนามทาง
+  </button>
+</div>
+
+  <div class="schedule">
+    <table id="scheduleTable"></table>
+  </div>
+  <div style="margin:20px;">
+    <h3 style="margin-bottom:10px;">📋 รายชื่อลูกค้า</h3>
+    <table id="bookingListTable" style="width:100%; border-collapse:collapse; background:white;">
+    </table>
+    <div id="cancelConfirmBox" style="
+  display:none;
+  margin-top:15px;
+  padding:15px;
+  border-radius:10px;
+  background:#fff3e0;
+  border:1px solid #ffcc80;
+  text-align:center;
+">
+      <div id="cancelText" style="margin-bottom:10px;font-weight:600;"></div>
+      <button onclick="confirmCancel()"
+          style="background:#e53935;color:white;border:none;
+                 padding:6px 14px;border-radius:6px;margin-right:10px;">
+    ยืนยันยกเลิก
+  </button>
+      <button onclick="hideCancelBox()"
+          style="background:#ccc;border:none;
+                 padding:6px 14px;border-radius:6px;">
+    ไม่ยกเลิก
+  </button>
+    </div>
+  </div>
+
+  <div id="bookingMessage" style="
+       max-width:900px;
+       margin:20px auto;
+       padding:18px;
+       border-radius:14px;
+       font-size:20px;
+       font-weight:bold;
+       text-align:center;
+       display:none;
+     ">
+  </div>
+
+  <div class="card">
+
+    <label>เลือกวันที่</label>
+    <input type="date" id="booking_date">
+
+    <input type="text" id="full_name" placeholder="ชื่อ-นามสกุล">
+    <input type="text" id="nickname" placeholder="ชื่อเล่น">
+
+    <select id="court_id">
+<option value="1">สนาม 1</option>
+<option value="2">สนาม 2</option>
+<option value="3">สนาม 3</option>
+<option value="4">สนาม 4</option>
+<option value="5">สนาม 5</option>
+</select>
+
+    <label>เวลาเช่า (15:00 - 23:00)</label>
+
+    <div style="display:flex; gap:40px; margin-bottom:10px;">
+
+      <div style="flex:1;">
+        <input type="time" id="start_time" min="15:00" max="23:00"
+           style="margin-bottom:2px;">
+        <div id="start_24" style="font-size:12px;color:#666; line-height:1;">
+        </div>
+      </div>
+
+      <div style="flex:1;">
+        <input type="time" id="end_time" readonly
+           style="margin-bottom:2px;">
+        <div id="end_24" style="font-size:12px;color:#666; line-height:1;">
+        </div>
+      </div>
+
+    </div>
+
+    <label style="margin-top:15px; display:block;">
+จำนวนชั่วโมง
+</label>
+    <input type="number" id="duration" min="1" value="1">
+
+    <div class="price" id="priceBox">ราคา 200 บาท / ชั่วโมง</div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+      <div class="coupon-row">
+        <span class="coupon-label">ใช้คูปอง (150 บาท/ชั่วโมง)</span>
+
+        <label class="switch">
+    <input type="checkbox" id="couponToggle">
+    <span class="slider"></span>
+    
+  </label>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="autoStart()">เริ่มตอนนี้</button>
+    <button class="btn-primary" onclick="submitForm()">ยืนยันการจอง</button>
+
+  </div>
+
+  <script>
+    let cancelTargetId = null;
+    const startHour = 15;
+const endHour = 23;
+const interval = 30;
+const API_URL = "https://script.google.com/macros/s/AKfycbxy5MNPP0JckxD1dmqAFKPFvPavOa758HCKrCGNHr9PyKRUx4j5qx1zSrBVAayJWIhF/exec";
+
+function setActiveRow(row){
+  document.querySelectorAll("#bookingListTable tr")
+    .forEach(r => r.classList.remove("active-row"));
+  row.classList.add("active-row");
+}
+
+function generateTable(courts){
+
+  const table = document.getElementById("scheduleTable");
+  table.innerHTML = "";
+
+  const header = table.insertRow();
+  header.insertCell().outerHTML = "<th>สนาม</th>";
+
+  for(let h=15; h<=23; h++){
+    for(let m=0; m<60; m+=30){
+      if(h===23 && m>0) break;
+      const th = document.createElement("th");
+      th.innerText =
+        h.toString().padStart(2,'0')+":"+
+        m.toString().padStart(2,'0');
+      header.appendChild(th);
+    }
+  }
+
+  courts.forEach(c=>{
+    const row = table.insertRow();
+    row.insertCell().innerText = c.name;
+
+    for(let h=15; h<=23; h++){
+      for(let m=0; m<60; m+=30){
+        if(h===23 && m>0) break;
+        const cell = row.insertCell();
+        cell.className="slot";
+      }
+    }
+  });
+}
+
+window.onload = function(){
+
+  const today = new Date().toISOString().split("T")[0];
+
+  document.getElementById("booking_date").value = today;
+  document.getElementById("schedule_date").value = today;
+
+  fetch(API_URL + "?action=getCourts")
+  .then(res => res.json())
+  .then(courts => {
+    generateTable(courts);
+  });
+  updatePrice();
+};
+
+function calculateEndTime(){
+
+  const startVal = document.getElementById("start_time").value;
+  const duration = parseInt(document.getElementById("duration").value);
+
+  if(!startVal || !duration) return;
+
+  const [h,m] = startVal.split(":").map(Number);
+
+  if(h < 15 || h > 22){
+    showMessage("เริ่มได้ตั้งแต่ 15:00 - 22:59", false);
+    return;
+  }
+
+  const start = new Date();
+  start.setHours(h,m,0);
+
+  const end = new Date(start.getTime() + duration*60*60*1000);
+
+  if(end.getHours()>23 || 
+    (end.getHours()==23 && end.getMinutes()>0)){
+      showMessage("ห้ามเกิน 23:00", false);
+      return;
+  }
+
+
+  document.getElementById("end_time").value =
+    end.getHours().toString().padStart(2,'0')+":"+
+    end.getMinutes().toString().padStart(2,'0');
+
+
+  document.getElementById("start_24").innerText =
+  "เวลา "+h.toString().padStart(2,'0')+":"+
+  m.toString().padStart(2,'0');
+
+document.getElementById("end_24").innerText =
+  "เวลา "+
+  end.getHours().toString().padStart(2,'0')+":"+
+  end.getMinutes().toString().padStart(2,'0');
+}
+
+document.getElementById("start_time")
+  .addEventListener("change", calculateEndTime);
+
+document.getElementById("duration")
+  .addEventListener("change", calculateEndTime);
+
+document.getElementById("duration")
+  .addEventListener("change", updatePrice);
+
+document.getElementById("couponToggle")
+  .addEventListener("change", updatePrice);
+
+function autoStart(){
+  const now = new Date();
+  if(now.getHours()<15) now.setHours(15,0,0);
+  document.getElementById("start_time").value =
+    now.getHours().toString().padStart(2,'0')+":"+
+    now.getMinutes().toString().padStart(2,'0');
+  calculateEndTime();
+}
+
+function getColumnIndex(hour, minute){
+  const totalMinutes = (hour-startHour)*60 + minute;
+  return Math.floor(totalMinutes/30)+1;
+}
+
+function loadSchedule(){
+
+  const date = document.getElementById("schedule_date").value;
+  if(!date) return alert("เลือกวันที่ก่อน");
+
+fetch(API_URL + "?action=getBookingsByDate&date=" + date)
+  .then(res => res.json())
+  .then(function(bookings){
+
+    const table = document.getElementById("scheduleTable");
+
+    document.querySelectorAll(".slot").forEach(c=>{
+      c.classList.remove("booked");
+      c.classList.remove("selected-booking");
+      c.innerHTML = "";
+    });
+
+    bookings.forEach(b=>{
+
+      const rowIndex = parseInt(b.court);  
+      const row = table.rows[rowIndex];
+      if(!row) return;
+
+      let startMin = toMin(b.start);
+      let endMin   = toMin(b.end);
+
+      const endMinute = endMin % 60;
+      let adjustedEnd = endMin;
+
+      if (endMinute !== 0 && endMinute !== 30) {
+        adjustedEnd = Math.floor(endMin / 30) * 30;
+      }
+
+      let current = Math.floor(startMin / 30) * 30;
+
+      while (current <= adjustedEnd) {
+
+        const hour = Math.floor(current / 60);
+        const minute = current % 60;
+        const col = getColumnIndex(hour, minute);
+
+        if (col > 0 && col < row.cells.length) {
+          const cell = row.cells[col];
+          cell.classList.add("booked");
+
+          if (cell.innerHTML === "") {
+            cell.innerHTML = b.full_name;
+          } else {
+            cell.innerHTML += "<br>" + b.full_name;
+          }
+        }
+
+        current += 30;
+      }
+
+    });
+
+  });
+
+loadBookingList();
+}
+
+function submitForm(){
+
+  const date = document.getElementById("booking_date").value;
+  const startVal = document.getElementById("start_time").value;
+  const endVal = document.getElementById("end_time").value;
+
+  if(!date || !startVal || !endVal){
+    showMessage("กรอกข้อมูลให้ครบ", false);
+    return;
+  }
+
+  const data = {
+  full_name: document.getElementById("full_name").value,
+  nickname: document.getElementById("nickname").value,
+  court_id: document.getElementById("court_id").value,
+  start_day: date,
+  start_time: startVal,
+  end_time: endVal,
+  has_coupon: document.getElementById("couponToggle").checked
+};
+
+fetch(API_URL, {
+  method: "POST",
+  body: JSON.stringify({
+    action: "saveBooking",
+    payload: data
+  })
+})
+.then(res => res.json())
+.then(function(res){
+
+  if(res.status){
+    showMessage(res.message, true);
+    resetForm();
+    loadSchedule();
+  }else{
+    showMessage(res.message, false);
+  }
+
+});
+}
+
+document.getElementById("booking_date")
+  .addEventListener("change", loadSchedule);
+
+  function toMin(t) {
+  if (!t) return -1;
+
+  const clean = t.toString().trim();
+  const p = clean.split(":");
+
+  return parseInt(p[0]) * 60 + parseInt(p[1]);
+}
+function loadBookingList(){
+
+  const date = document.getElementById("schedule_date").value;
+  if(!date) return;
+
+  fetch(API_URL +"?action=getBookingListByDate&date=" + date)
+  .then(res => res.json())
+  .then(function(list){
+
+    const table = document.getElementById("bookingListTable");
+
+    let html = `
+      <tr>
+        <th>ชื่อ</th>
+        <th>ชื่อเล่น</th>
+        <th>สนาม</th>
+        <th>เวลาเริ่ม</th>
+        <th>เวลาสิ้นสุด</th>
+        <th>จัดการ</th>
+      </tr>
+    `;
+
+    if(list.length === 0){
+  table.innerHTML = `
+    <tr>
+      <th>ชื่อ</th>
+      <th>ชื่อเล่น</th>
+      <th>สนาม</th>
+      <th>เวลาเริ่ม</th>
+      <th>เวลาสิ้นสุด</th>
+      <th>จัดการ</th>
+    </tr>
+    <tr>
+      <td colspan="6" style="padding:20px;font-weight:bold;color:#888;">
+        ยังไม่มีคนจอง
+      </td>
+    </tr>
+  `;
+  return;
+}
+
+    list.forEach(b=>{
+      html += `
+        <tr onclick="setActiveRow(this); focusBooking('${b.court}','${b.start}','${b.end}','${b.full_name}')"
+          style="cursor:pointer">
+          <td>${b.full_name}</td>
+          <td>${b.nickname}</td>
+          <td>สนาม ${b.court}</td>
+          <td>${b.start}</td>
+          <td>${b.end}</td>
+          <td>
+            <button class="cancel-btn"
+              onclick="event.stopPropagation(); showCancelConfirm('${b.id}','${b.full_name}')">
+              ยกเลิก
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    table.innerHTML = html;
+
+  });
+}
+function showMessage(text, isSuccess){
+
+  const box = document.getElementById("bookingMessage");
+
+  box.innerText = text;
+  box.style.display = "block";
+
+  box.classList.remove("success-msg","error-msg");
+
+  if(isSuccess){
+    box.classList.add("success-msg");
+  }else{
+    box.classList.add("error-msg");
+  }
+
+  box.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  setTimeout(()=>{
+    box.style.display = "none";
+  },4000);
+}
+
+function resetForm(){
+
+  document.getElementById("full_name").value = "";
+  document.getElementById("nickname").value = "";
+  document.getElementById("start_time").value = "";
+  document.getElementById("end_time").value = "";
+  document.getElementById("duration").value = 1;
+
+  document.getElementById("start_24").innerText = "";
+  document.getElementById("end_24").innerText = "";
+}
+
+function updatePrice(){
+
+  const duration = parseInt(document.getElementById("duration").value);
+  const hasCoupon = document.getElementById("couponToggle").checked;
+  const priceBox = document.getElementById("priceBox");
+
+  const pricePerHour = hasCoupon ? 150 : 200;
+  const total = pricePerHour * duration;
+
+  priceBox.innerText =
+    "ราคา " + total + " บาท (" + pricePerHour + " บาท/ชั่วโมง)";
+
+  priceBox.classList.remove("price-coupon");
+  if(hasCoupon){
+    priceBox.classList.add("price-coupon");
+  }
+
+  priceBox.classList.remove("price-animate");
+  void priceBox.offsetWidth;
+  priceBox.classList.add("price-animate");
+}
+const scheduleDate = document.getElementById("schedule_date");
+const bookingDate  = document.getElementById("booking_date");
+
+function syncDate(source){
+
+  const value = source.value;
+
+  scheduleDate.value = value;
+  bookingDate.value  = value;
+
+  loadSchedule();
+}
+
+scheduleDate.addEventListener("change", function(){
+  syncDate(this);
+});
+
+bookingDate.addEventListener("change", function(){
+  syncDate(this);
+});
+
+function focusBooking(court, start, end, name){
+
+  document.querySelectorAll(".slot")
+    .forEach(c => c.classList.remove("selected-booking"));
+
+  const table = document.getElementById("scheduleTable");
+
+  const rowIndex = parseInt(court);
+  const row = table.rows[rowIndex];
+  if(!row) return;
+
+  let startMin = toMin(start);
+  let endMin   = toMin(end);
+
+ const endMinute = endMin % 60;
+
+let adjustedEnd = endMin;
+
+if (endMinute !== 0 && endMinute !== 30) {
+  adjustedEnd = Math.floor(endMin / 30) * 30;
+}
+
+let current = Math.floor(startMin / 30) * 30;
+
+while (current <= adjustedEnd) {
+
+  const hour = Math.floor(current / 60);
+  const minute = current % 60;
+
+  const col = getColumnIndex(hour, minute);
+
+  if (col > 0 && col < row.cells.length) {
+    row.cells[col].classList.add("selected-booking");
+  }
+
+  current += 30;
+}
+
+const highlightedCells = row.querySelectorAll(".selected-booking");
+
+if(highlightedCells.length > 0){
+
+  const container = document.querySelector(".schedule");
+
+  const middleIndex = Math.floor(highlightedCells.length / 2);
+  const middleCell = highlightedCells[middleIndex];
+
+  middleCell.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  const cellCenter = middleCell.offsetLeft + (middleCell.offsetWidth / 2);
+  const containerCenter = container.clientWidth / 2;
+
+  container.scrollTo({
+    left: cellCenter - containerCenter,
+    behavior: "smooth"
+  });
+  highlightedCells.forEach(cell => {
+    cell.classList.add("flash");
+
+    setTimeout(() => {
+      cell.classList.remove("flash");
+    }, 600);
+  });
+}
+}
+
+function showCancelConfirm(id,name){
+
+  cancelTargetId = id;
+
+  const box = document.getElementById("cancelConfirmBox");
+  const text = document.getElementById("cancelText");
+
+  text.innerText = "ต้องการยกเลิกการจองของ " + name + " ใช่หรือไม่?";
+  box.style.display = "block";
+
+  box.scrollIntoView({behavior:"smooth"});
+}
+
+function hideCancelBox(){
+  cancelTargetId = null;
+  document.getElementById("cancelConfirmBox").style.display = "none";
+}
+
+function confirmCancel(){
+
+  if(!cancelTargetId) return;
+
+  fetch(API_URL, {
+  method: "POST",
+  body: JSON.stringify({
+    action: "cancelBooking",
+    id: cancelTargetId
+  })
+})
+.then(res => res.json())
+.then(function(res){
+
+  if(res.status){
+    showMessage("ยกเลิกจองสำเร็จ", true);
+    loadSchedule();
+  }else{
+    showMessage("เกิดข้อผิดพลาด", false);
+  }
+
+  hideCancelBox();
+});
+}
+
+function goToBookingForm(){
+  document.querySelector(".card").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+let currentUser = null;
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  liff.init({ liffId: "2009412377-oQuauaRX" })
+    .then(() => {
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      return liff.getProfile();
+
+    })
+    .then(profile => {
+
+      if(!profile) return;
+
+      const name = profile.displayName;
+      const userId = profile.userId;
+
+      console.log("LINE Name:", name);
+      console.log("LINE UserID:", userId);
+
+      // ใส่ชื่ออัตโนมัติ
+      const nameInput = document.getElementById("full_name");
+      if(nameInput && nameInput.value === ""){
+        nameInput.value = name;
+      }
+
+    })
+    .catch(err => console.error(err));
+
+});
+
+function logUserAccess(user){
+
+function logUserAccess(user){
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "logAccess",
+      payload: user
+    })
+  })
+  .then(res => res.json())
+  .then(res => console.log("Access logged"))
+  .catch(err => console.error("Log error", err));
+
+}
+
+}
+  </script>
+
+</body>
+
+</html>
