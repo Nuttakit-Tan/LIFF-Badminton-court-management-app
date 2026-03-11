@@ -521,7 +521,7 @@ function calculateEndTime(){
   const [h,m] = startVal.split(":").map(Number);
 
   if(h < 15 || h > 22){
-    alert("เริ่มได้ตั้งแต่ 15:00 - 22:59");
+    showMessage("เริ่มได้ตั้งแต่ 15:00 - 22:59", false);
     return;
   }
 
@@ -532,7 +532,7 @@ function calculateEndTime(){
 
   if(end.getHours()>23 || 
     (end.getHours()==23 && end.getMinutes()>0)){
-      alert("ห้ามเกิน 23:00");
+      showMessage("ห้ามเกิน 23:00", false);
       return;
   }
 
@@ -772,7 +772,13 @@ function showMessage(text, isSuccess){
     box.classList.add("error-msg");
   }
 
-  // 🔥 ซ่อนอัตโนมัติหลัง 4 วินาที
+  // ✅ เลื่อนขึ้นไปหาแจ้งเตือน
+  box.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  // ซ่อนอัตโนมัติ
   setTimeout(()=>{
     box.style.display = "none";
   },4000);
