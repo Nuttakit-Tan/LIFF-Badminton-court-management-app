@@ -26,11 +26,6 @@
   margin: 10px;
 }
 
-    table {
-  border-collapse: collapse;
-  width: max-content;
-}
-
 table {
   border-collapse: collapse;
   width: 100%;
@@ -312,6 +307,11 @@ td {
     .header {
   border-radius: 0;
     }
+
+    #bookingListTable tr.active-row td {
+  background: #ffe082 !important;
+  font-weight: bold;
+}
   </style>
 
 </head>
@@ -320,12 +320,18 @@ td {
 
   <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00)</div>
   <div style="margin:15px; display:flex; gap:10px; align-items:center;">
-    <input type="date" id="schedule_date" style="padding:10px; border-radius:8px;">
-    <button onclick="loadSchedule()"
+  <input type="date" id="schedule_date" style="padding:10px; border-radius:8px;">
+
+  <button onclick="loadSchedule()"
     style="padding:20px 16px; border:none; border-radius:8px; background:#06C755; color:white;">
     โหลดข้อมูล
   </button>
-  </div>
+
+  <button onclick="goToBookingForm()"
+    style="padding:20px 16px; border:none; border-radius:8px; background:#1976d2; color:white;">
+    จองสนามทาง
+  </button>
+</div>
 
   <div class="schedule">
     <table id="scheduleTable"></table>
@@ -668,6 +674,12 @@ document.getElementById("booking_date")
 }
 function loadBookingList(){
 
+  function setActiveRow(row){
+  document.querySelectorAll("#bookingListTable tr")
+    .forEach(r => r.classList.remove("active-row"));
+  row.classList.add("active-row");
+}
+
   const date = document.getElementById("schedule_date").value;
   if(!date) return;
 
@@ -688,9 +700,28 @@ function loadBookingList(){
       </tr>
     `;
 
+    if(list.length === 0){
+  table.innerHTML = `
+    <tr>
+      <th>ชื่อ</th>
+      <th>ชื่อเล่น</th>
+      <th>สนาม</th>
+      <th>เวลาเริ่ม</th>
+      <th>เวลาสิ้นสุด</th>
+      <th>จัดการ</th>
+    </tr>
+    <tr>
+      <td colspan="6" style="padding:20px;font-weight:bold;color:#888;">
+        ยังไม่มีคนจอง
+      </td>
+    </tr>
+  `;
+  return;
+}
+
     list.forEach(b=>{
       html += `
-        <tr onclick="focusBooking('${b.court}','${b.start}','${b.end}','${b.full_name}')"
+        <tr onclick="setActiveRow(this); focusBooking('${b.court}','${b.start}','${b.end}','${b.full_name}')"
           style="cursor:pointer">
           <td>${b.full_name}</td>
           <td>${b.nickname}</td>
@@ -828,8 +859,15 @@ while (current <= adjustedEnd) {
 }
 
   // เลื่อนหน้าจอขึ้นไปที่ตารางเวลา
-  document.getElementById("scheduleTable")
-    .scrollIntoView({ behavior: "smooth" });
+  const targetCell = row.querySelector(".selected-booking");
+
+if(targetCell){
+  targetCell.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+    inline: "center"
+  });
+}
 }
 
 function showCancelConfirm(id,name){
@@ -873,6 +911,12 @@ function confirmCancel(){
 
   hideCancelBox();
 });
+}
+
+function goToBookingForm(){
+  document.querySelector(".card").scrollIntoView({
+    behavior: "smooth"
+  });
 }
   </script>
 
