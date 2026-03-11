@@ -6,17 +6,10 @@
 
   <style>
     body {
-  max-width: 100%;
-  overflow-x: hidden;
+  margin: 0;
+  font-family: sans-serif;
+  background: #f4f6f9;
 }
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f4f6f9;
-      padding: 20px;
-      /* 🔥 เว้นซ้ายขวาทั้งหน้า */
-    }
-
     .header {
       background: #06C755;
       color: white;
@@ -28,26 +21,30 @@
     }
 
     .schedule {
-      overflow-x: auto;
-      margin: 15px;
-    }
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 10px;
+}
 
     table {
   border-collapse: collapse;
   width: max-content;
 }
 
-.schedule {
-  overflow-x: auto;
+table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
 }
 
     th,
-    td {
-      border: 1px solid #ddd;
-      text-align: center;
-      padding: 8px;
-      font-size: 12px;
-    }
+td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+}
 
     #scheduleTable th {
       background: #06C755;
@@ -310,6 +307,10 @@
 
     .cancel-btn:hover {
       background: #c62828;
+    }
+
+    .header {
+  border-radius: 0;
     }
   </style>
 
