@@ -863,24 +863,28 @@ while (current <= adjustedEnd) {
   current += 30;
 }
 
-const targetCell = row.querySelector(".selected-booking");
+const highlightedCells = row.querySelectorAll(".selected-booking");
 
-if(targetCell){
+if(highlightedCells.length > 0){
 
-  // เลื่อนแนวตั้ง
-  targetCell.scrollIntoView({
+  const container = document.querySelector(".schedule");
+
+  // หา cell กลางของช่วงที่จอง
+  const middleIndex = Math.floor(highlightedCells.length / 2);
+  const middleCell = highlightedCells[middleIndex];
+
+  // ===== เลื่อนแนวตั้ง =====
+  middleCell.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
 
-  // เลื่อนแนวนอน
-  const container = document.querySelector(".schedule");
-
-  const cellLeft = targetCell.offsetLeft;
-  const containerWidth = container.clientWidth;
+  // ===== เลื่อนแนวนอนแบบคำนวณกลางจริง =====
+  const cellCenter = middleCell.offsetLeft + (middleCell.offsetWidth / 2);
+  const containerCenter = container.clientWidth / 2;
 
   container.scrollTo({
-    left: cellLeft - containerWidth / 2,
+    left: cellCenter - containerCenter,
     behavior: "smooth"
   });
 }
