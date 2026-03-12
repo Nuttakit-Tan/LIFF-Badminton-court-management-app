@@ -325,8 +325,32 @@ transition: transform 0.2s ease;
 </head>
 
 <body style="display:none;">
-
-  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00)</div>
+  <div id="firstTimeModal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.5);
+z-index:999;
+align-items:center;
+justify-content:center;
+">
+  <div style="
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    width:90%;
+    max-width:400px;
+  ">
+    <h3>กรอกข้อมูลก่อนใช้งาน</h3>
+    <input type="text" id="first_full" placeholder="ชื่อจริง">
+    <input type="text" id="first_nick" placeholder="ชื่อเล่น">
+    <button onclick="saveFirstProfile()" 
+      style="background:#06C755;color:white;border:none;padding:10px;border-radius:8px;">
+      บันทึก
+    </button>
+  </div>
+</div>
+  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00) ทดสอบครั้งที่ 7</div>
   <div style="margin:15px; display:flex; gap:10px; align-items:center;">
   <input type="date" id="schedule_date" style="padding:10px; border-radius:8px;">
 
@@ -426,7 +450,7 @@ transition: transform 0.2s ease;
 
     <div class="price" id="priceBox">ราคา 200 บาท / ชั่วโมง</div>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-      <div class="coupon-row">
+      <div class="coupon-row" id="couponSection">
         <span class="coupon-label">ใช้คูปอง (150 บาท/ชั่วโมง)</span>
 
         <label class="switch">
@@ -443,11 +467,13 @@ transition: transform 0.2s ease;
   </div>
 
   <script>
+    let editingBookingId = null;
+let editingOriginalUserId = null;
     let cancelTargetId = null;
     const startHour = 15;
 const endHour = 23;
 const interval = 30;
-const API_URL = "https://script.google.com/macros/s/AKfycbxy5MNPP0JckxD1dmqAFKPFvPavOa758HCKrCGNHr9PyKRUx4j5qx1zSrBVAayJWIhF/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyY2jjYsSu45YlZXUQEVusJtFika3HH1FC26L1ilPN1U0_lmkmga6O8r_nGgE4aOQXE/exec";
 
 function setActiveRow(row){
   document.querySelectorAll("#bookingListTable tr")
@@ -642,6 +668,7 @@ function submitForm(){
   const date = document.getElementById("booking_date").value;
   const startVal = document.getElementById("start_time").value;
   const endVal = document.getElementById("end_time").value;
+  const actionType = editingBookingId ? "updateBooking" : "saveBooking";
 
   if(!date || !startVal || !endVal){
     showMessage("กรอกข้อมูลให้ครบ", false);
@@ -656,28 +683,36 @@ function submitForm(){
     start_time: startVal,
     end_time: endVal,
     has_coupon: document.getElementById("couponToggle").checked,
-    line_user_id: currentUser.userId   // 🔥 ตรงนี้สำคัญ
+    line_user_id: currentUser.userId
   };
 
 fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "saveBooking",
-      payload: data
-    })
+  method: "POST",
+  body: JSON.stringify({
+    action: actionType,
+    bookingId: editingBookingId,
+    payload: data
   })
-.then(res => res.json())
-  .then(function(res){
+})
+.then(res => res.json())   // 🔥 ต้องมีบรรทัดนี้
+.then(function(res){
 
-    if(res.status){
-      showMessage(res.message, true);
-      resetForm();
-      loadSchedule();
-    }else{
-      showMessage(res.message, false);
-    }
+  if(res.status){
 
-  });
+  showMessage(res.message, true);
+  resetForm();
+  loadSchedule();
+
+  editingBookingId = null;
+
+  document.querySelector(".btn-primary").innerText = "ยืนยันการจอง";
+
+  removeEditButtons();  // 🔥 เพิ่มตรงนี้
+}else{
+    showMessage(res.message, false);
+  }
+
+});
 }
 
 document.getElementById("booking_date")
@@ -703,15 +738,15 @@ function loadBookingList(){
     const table = document.getElementById("bookingListTable");
 
     let html = `
-      <tr>
-        <th>ชื่อ</th>
-        <th>ชื่อเล่น</th>
-        <th>สนาม</th>
-        <th>เวลาเริ่ม</th>
-        <th>เวลาสิ้นสุด</th>
-        <th>จัดการ</th>
-      </tr>
-    `;
+  <tr>
+    <th>ชื่อ</th>
+    <th>ชื่อเล่น</th>
+    <th>สนาม</th>
+    <th>เวลาเริ่ม</th>
+    <th>เวลาสิ้นสุด</th>
+    ${isStaff ? "<th>จัดการ</th>" : ""}
+  </tr>
+`;
 
     if(list.length === 0){
   table.innerHTML = `
@@ -741,12 +776,14 @@ function loadBookingList(){
           <td>สนาม ${b.court}</td>
           <td>${b.start}</td>
           <td>${b.end}</td>
-          <td>
-            <button class="cancel-btn"
-              onclick="event.stopPropagation(); showCancelConfirm('${b.id}','${b.full_name}')">
-              ยกเลิก
-            </button>
-          </td>
+          ${isStaff ? `
+<td>
+  <button class="cancel-btn"
+  onclick="event.stopPropagation(); startEditBooking('${b.id}')">
+  แก้ไข
+</button>
+</td>
+` : ""}
         </tr>
       `;
     });
@@ -954,6 +991,7 @@ function goToBookingForm(){
 }
 
 let currentUser = null;
+let isStaff = false; 
 
 document.addEventListener("DOMContentLoaded", function(){
 
@@ -974,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", function(){
       if(!profile) return;
 
       currentUser = profile;
-
+      checkFirstTime(profile.userId);
       logUserAccess(profile);
 
       document.body.style.display = "block";
@@ -986,12 +1024,23 @@ document.addEventListener("DOMContentLoaded", function(){
 
       // เช็ค role
       fetch(API_URL + "?action=getRole&userId=" + profile.userId)
-        .then(res => res.json())
-        .then(res => {
-          if(res.role === "admin" || res.role === "staff"){
-            document.getElementById("importBtn").style.display = "block";
-          }
-        });
+  .then(res => res.json())
+  .then(res => {
+
+    // 🔵 ถ้าเป็นพนักงาน
+  if(res.role === "admin" || res.role === "staff"){
+  document.getElementById("importBtn").style.display = "block";
+  isStaff = true;
+
+  document.getElementById("couponSection").style.display = "flex"; // 🔥 เพิ่ม
+}
+else{
+  isStaff = false;
+
+  document.getElementById("couponSection").style.display = "none"; // 🔥 ซ่อนเลย
+}
+
+  });
 
     })
     .catch(err => console.error(err));
@@ -1011,6 +1060,140 @@ function logUserAccess(user){
   .then(res => console.log("Access logged"))
   .catch(err => console.error("Log error", err));
 
+}
+function checkFirstTime(userId){
+
+  fetch(API_URL + "?action=getAccessProfile&userId=" + userId)
+  .then(res => res.json())
+  .then(data => {
+
+    if(!data.full_name){
+      document.getElementById("firstTimeModal").style.display = "flex";
+    } else {
+      document.getElementById("full_name").value = data.full_name;
+      document.getElementById("nickname").value = data.nickname;
+    }
+
+  });
+
+}
+
+function saveFirstProfile(){
+
+  const full = document.getElementById("first_full").value;
+  const nick = document.getElementById("first_nick").value;
+
+  if(!full || !nick){
+    alert("กรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"logAccess",
+      payload:{
+  userId: currentUser.userId,
+  displayName: currentUser.displayName,
+  pictureUrl: currentUser.pictureUrl,
+  full_name: full,
+  nickname: nick
+}
+    })
+  })
+  .then(()=>{
+
+    document.getElementById("firstTimeModal").style.display="none";
+
+    document.getElementById("full_name").value = full;
+    document.getElementById("nickname").value = nick;
+
+  });
+
+}
+
+function startEditBooking(id){
+
+  if(!isStaff) return;
+
+  fetch(API_URL + "?action=getBookingDetail&id=" + id)
+  .then(res => res.json())
+  .then(data => {
+
+    editingBookingId = id;
+    editingOriginalUserId = data.line_user_id;
+
+    document.getElementById("full_name").value = data.full_name;
+    document.getElementById("nickname").value = data.nickname;
+    document.getElementById("court_id").value = data.court;
+    document.getElementById("booking_date").value = data.start_day;
+    document.getElementById("start_time").value = data.start;
+    document.getElementById("end_time").value = data.end;
+
+    document.getElementById("duration").value =
+      (toMin(data.end) - toMin(data.start)) / 60;
+
+    document.querySelector(".btn-primary").innerText = "บันทึกการแก้ไข";
+
+    // 🔥 เพิ่มปุ่มยกเลิกการจองใต้ปุ่มหลัก
+    addCancelEditModeButton();
+addCancelBookingButton();
+
+    goToBookingForm();
+  });
+
+}
+
+function addCancelEditModeButton(){
+
+  if(document.getElementById("cancelEditModeBtn")) return;
+
+  const btn = document.createElement("button");
+  btn.id = "cancelEditModeBtn";
+  btn.innerText = "ยกเลิกการแก้ไข";
+  btn.style.background = "#9e9e9e";
+  btn.style.color = "white";
+  btn.style.marginTop = "10px";
+
+  btn.onclick = function(){
+
+    editingBookingId = null;
+
+    resetForm();
+
+    document.querySelector(".btn-primary").innerText = "ยืนยันการจอง";
+
+    removeEditButtons();
+  };
+
+  document.querySelector(".card").appendChild(btn);
+}
+
+function addCancelBookingButton(){
+
+  if(document.getElementById("cancelBookingBtn")) return;
+
+  const btn = document.createElement("button");
+  btn.id = "cancelBookingBtn";
+  btn.innerText = "ยกเลิกการจอง";
+  btn.style.background = "#e53935";
+  btn.style.color = "white";
+  btn.style.marginTop = "10px";
+
+  btn.onclick = function(){
+    showCancelConfirm(editingBookingId, "รายการนี้");
+  };
+
+  document.querySelector(".card").appendChild(btn);
+}
+
+function removeEditButtons(){
+
+  const btn1 = document.getElementById("cancelEditModeBtn");
+  if(btn1) btn1.remove();
+
+  const btn2 = document.getElementById("cancelBookingBtn");
+  if(btn2) btn2.remove();
 }
   </script>
 
