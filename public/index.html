@@ -4,6 +4,10 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <button id="importBtn"
+  style="display:none; margin:15px; background:#ff9800; color:white; padding:10px; border-radius:8px;">
+  นำเข้ารายการสินค้า
+</button>
 
   <style>
     body {
@@ -320,7 +324,7 @@ transition: transform 0.2s ease;
 
 </head>
 
-<body>
+<body style="display:none;">
 
   <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00)</div>
   <div style="margin:15px; display:flex; gap:10px; align-items:center;">
@@ -646,7 +650,8 @@ function submitForm(){
   start_day: date,
   start_time: startVal,
   end_time: endVal,
-  has_coupon: document.getElementById("couponToggle").checked
+  has_coupon: document.getElementById("couponToggle").checked,
+  line_user_id: currentUser.userId 
 };
 
 fetch(API_URL, {
@@ -918,9 +923,10 @@ function confirmCancel(){
   fetch(API_URL, {
   method: "POST",
   body: JSON.stringify({
-    action: "cancelBooking",
-    id: cancelTargetId
-  })
+  action: "cancelBooking",
+  id: cancelTargetId,
+  userId: currentUser.userId
+})
 })
 .then(res => res.json())
 .then(function(res){
@@ -950,35 +956,42 @@ document.addEventListener("DOMContentLoaded", function(){
     .then(() => {
 
       if (!liff.isLoggedIn()) {
-        liff.login();
+        liff.login({
+          redirectUri: window.location.href
+        });
         return;
       }
 
       return liff.getProfile();
-
     })
     .then(profile => {
 
       if(!profile) return;
 
-      const name = profile.displayName;
-      const userId = profile.userId;
+      currentUser = profile;
 
-      console.log("LINE Name:", name);
-      console.log("LINE UserID:", userId);
+      logUserAccess(profile);
 
-      // ใส่ชื่ออัตโนมัติ
+      document.body.style.display = "block"; // 🔥 แสดงหน้าเมื่อ login แล้ว
+
       const nameInput = document.getElementById("full_name");
       if(nameInput && nameInput.value === ""){
-        nameInput.value = name;
+        nameInput.value = profile.displayName;
       }
+
+      // เช็ค role
+      fetch(API_URL + "?action=getRole&userId=" + profile.userId)
+        .then(res => res.json())
+        .then(res => {
+          if(res.role === "admin" || res.role === "staff"){
+            document.getElementById("importBtn").style.display = "block";
+          }
+        });
 
     })
     .catch(err => console.error(err));
 
 });
-
-function logUserAccess(user){
 
 function logUserAccess(user){
 
@@ -992,8 +1005,6 @@ function logUserAccess(user){
   .then(res => res.json())
   .then(res => console.log("Access logged"))
   .catch(err => console.error("Log error", err));
-
-}
 
 }
   </script>
