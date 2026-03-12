@@ -827,6 +827,15 @@ function resetForm(){
 
   document.getElementById("start_24").innerText = "";
   document.getElementById("end_24").innerText = "";
+  
+  if(currentUser && currentUser.userId){
+    fetch(API_URL + "?action=getAccessProfile&userId=" + currentUser.userId)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("full_name").value = data.full_name || "";
+      document.getElementById("nickname").value = data.nickname || "";
+    });
+  }
 }
 
 function updatePrice(){
@@ -1017,12 +1026,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
       document.body.style.display = "block";
 
-      const nameInput = document.getElementById("full_name");
-      if(nameInput && nameInput.value === ""){
-        nameInput.value = profile.displayName;
-      }
 
-      // เช็ค role
       fetch(API_URL + "?action=getRole&userId=" + profile.userId)
   .then(res => res.json())
   .then(res => {
