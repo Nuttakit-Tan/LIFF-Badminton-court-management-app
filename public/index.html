@@ -350,7 +350,7 @@ justify-content:center;
     </button>
   </div>
 </div>
-  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00) ทดสอบครั้งที่ 8</div>
+  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00) ทดสอบครั้งที่ 58</div>
   <div style="margin:15px; display:flex; gap:10px; align-items:center;">
   <input type="date" id="schedule_date" style="padding:10px; border-radius:8px;">
 
@@ -473,7 +473,7 @@ let editingOriginalUserId = null;
     const startHour = 15;
 const endHour = 23;
 const interval = 30;
-const API_URL = "https://script.google.com/macros/s/AKfycbyY2jjYsSu45YlZXUQEVusJtFika3HH1FC26L1ilPN1U0_lmkmga6O8r_nGgE4aOQXE/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzZS3lC9f2j2gwvt5lKCJ5OhaFSifPcOj4ot9m3aC2Az7k-HQUDFz6Kspyf10-iFwa8/exec";
 
 function setActiveRow(row){
   document.querySelectorAll("#bookingListTable tr")
@@ -525,6 +525,7 @@ window.onload = function(){
   .then(res => res.json())
   .then(courts => {
     generateTable(courts);
+    loadSchedule();
   });
   updatePrice();
 };
@@ -744,7 +745,7 @@ function loadBookingList(){
     <th>สนาม</th>
     <th>เวลาเริ่ม</th>
     <th>เวลาสิ้นสุด</th>
-    ${isStaff ? "<th>จัดการ</th>" : ""}
+    ${isStaff ? "<th>คูปอง</th><th>จัดการ</th>" : ""}
   </tr>
 `;
 
@@ -777,6 +778,7 @@ function loadBookingList(){
           <td>${b.start}</td>
           <td>${b.end}</td>
           ${isStaff ? `
+<td>${b.has_coupon ? "✅ ใช้คูปอง" : "❌ ปกติ"}</td>
 <td>
   <button class="cancel-btn"
   onclick="event.stopPropagation(); startEditBooking('${b.id}')">
