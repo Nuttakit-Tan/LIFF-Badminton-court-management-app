@@ -350,7 +350,7 @@ justify-content:center;
     </button>
   </div>
 </div>
-  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00) ทดสอบครั้งที่ 58</div>
+  <div class="header">🏸 ระบบจองสนาม (15:00 - 23:00) ทดสอบครั้งที่ 60</div>
   <div style="margin:15px; display:flex; gap:10px; align-items:center;">
   <input type="date" id="schedule_date" style="padding:10px; border-radius:8px;">
 
@@ -467,6 +467,12 @@ justify-content:center;
   </div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+const externalUid = urlParams.get("uid");
+
+if (externalUid) {
+  currentUser = { userId: externalUid };
+}
     let editingBookingId = null;
 let editingOriginalUserId = null;
     let cancelTargetId = null;
@@ -1006,47 +1012,34 @@ let isStaff = false;
 
 document.addEventListener("DOMContentLoaded", function(){
 
-  liff.init({ liffId: "2009412377-oQuauaRX" })
-    .then(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const externalUid = urlParams.get("uid");
 
-      if (!liff.isLoggedIn()) {
-        liff.login({
-          redirectUri: window.location.href
-        });
-        return;
-      }
+  // 🔵 กรณีเปิดจาก external:true (มี uid ส่งมา)
+  if (externalUid) {
 
-      return liff.getProfile();
-    })
-    .then(profile => {
+    initApp(externalUid);
+    return;
 
-      if(!profile) return;
+  }
 
-      currentUser = profile;
-      checkFirstTime(profile.userId);
-      logUserAccess(profile);
+  // 🔵 กรณีเปิดแบบปกติใน LIFF
+liff.init({ liffId: "2009412377-oQuauaRX" })
+.then(() => {
 
-      document.body.style.display = "block";
+  if (!liff.isLoggedIn()) {
+    liff.login({ redirectUri: window.location.href });
+    return;
+  }
 
+  return liff.getProfile();
 
-      fetch(API_URL + "?action=getRole&userId=" + profile.userId)
-  .then(res => res.json())
-  .then(res => {
+})
+.then(profile => {
 
-    // 🔵 ถ้าเป็นพนักงาน
-  if(res.role === "admin" || res.role === "staff"){
-  document.getElementById("importBtn").style.display = "block";
-  isStaff = true;
+  if(!profile) return;
 
-  document.getElementById("couponSection").style.display = "flex"; // 🔥 เพิ่ม
-}
-else{
-  isStaff = false;
-
-  document.getElementById("couponSection").style.display = "none"; // 🔥 ซ่อนเลย
-}
-
-  });
+  initApp(profile); 
 
     })
     .catch(err => console.error(err));
@@ -1200,6 +1193,37 @@ function removeEditButtons(){
 
   const btn2 = document.getElementById("cancelBookingBtn");
   if(btn2) btn2.remove();
+}
+
+function initApp(profile){
+
+  currentUser = {
+    userId: profile.userId,
+    displayName: profile.displayName,
+    pictureUrl: profile.pictureUrl
+  };
+
+  document.body.style.display = "block";
+
+  checkFirstTime(profile.userId);
+
+  logUserAccess(currentUser);   // 🔥 ส่งครบ
+
+  fetch(API_URL + "?action=getRole&userId=" + profile.userId)
+    .then(res => res.json())
+    .then(res => {
+
+      if(res.role === "admin" || res.role === "staff"){
+        document.getElementById("importBtn").style.display = "block";
+        isStaff = true;
+        document.getElementById("couponSection").style.display = "flex";
+      } else {
+        isStaff = false;
+        document.getElementById("couponSection").style.display = "none";
+      }
+
+    });
+
 }
   </script>
 

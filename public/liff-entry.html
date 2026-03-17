@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+
+<script>
+liff.init({ liffId: "2009412377-oQuauaRX" })
+.then(() => {
+
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+
+  return liff.getProfile();
+
+})
+.then(profile => {
+
+  if(!profile) return;
+
+  const targetUrl =
+    "https://badminton-manager-3fee5.web.app/?uid=" 
+    + encodeURIComponent(profile.userId);
+
+  liff.openWindow({
+    url: targetUrl,
+    external: true
+  });
+
+});
+</script>
+
+</body>
+</html>
